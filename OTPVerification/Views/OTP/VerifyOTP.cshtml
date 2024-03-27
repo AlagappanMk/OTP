@@ -1,0 +1,111 @@
+﻿@model OTPVerification.ViewModels.VerifyOTPViewModel
+<link href="~/css/otp/verifyotp.css" rel="stylesheet" />
+@{
+    ViewData["Title"] = "Verify OTP";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="text-center">Verify OTP</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="ValidateOTP" method="post" id="otpForm">
+                        <div class="form-group">
+                            <div class="text-muted text-center mb-4">
+                                OTP has been sent to your email. Please check your inbox and Enter the OTP.
+                            </div>
+                            <label for="OTP">Enter OTP</label>
+                            <input type="text" class="form-control mt-2" id="OTP" name="otp" />
+                            <span id="validationMessage" class="invalid-message" style="display: none;"></span>
+                        </div>
+                        <input type="hidden" id="Token" name="Token" value="@Model.EncryptedToken" />
+                        <input type="hidden" id="Key" name="Key" value="@Model.EncryptedKey" />
+                        <input type="hidden" id="IV" name="IV" value="@Model.EncryptedIV" />
+                        <input type="hidden" id="ToEmail" name="ToEmail" value="@Model.ToEmail" />
+
+                        <div class="mt-3">
+                            <button type="submit" class="btn btn-primary btn-block">Verify OTP</button>
+                        </div>
+                        @if (!string.IsNullOrEmpty(Model.Message))
+                        {
+                            <div id="otpValidationMessage" class="@Model.MessageClass" role="alert">
+                                @Model.Message
+                            </div>
+                        }
+                    </form>
+                </div>
+                <div class="card-footer text-muted text-center">
+                    <div id="overlay" style="display: none;"></div>
+                    <div id="spinner" style="display: none;"></div>
+                    <p class="mb-0">Didn't receive OTP? <a href="#" id="resendOTP">Resend OTP</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            setTimeout(function () {
+                $('#otpValidationMessage').fadeOut();
+            }, 2000);
+
+            $('#resendOTP').click(function (e) {
+                e.preventDefault();
+
+                var token = $("#Token").val();
+                var key = $("#Key").val();
+                var iv = $("#IV").val();
+                var email = $("#ToEmail").val();
+
+                let data = {
+                    Token: token,
+                    Key: key,
+                    IV: iv,
+                    ToEmail: email
+                }
+                console.log(data, "DATA");
+
+                $.ajax({
+                    url: '@Url.Action("ResendOTP", "OTP")',
+                    method: "POST",
+                    data: data,
+                    success: function (response) {
+                        $("#Token").val(response.token);
+                        $("#Key").val(response.key);
+                        $("#IV").val(response.iv);
+                        $("#ToEmail").val(response.email);
+
+                        $("#OTP").val("");
+                        $("#validationMessage").hide();
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Failed to resend OTP:", error);
+                    }
+                });
+            });
+
+            $("#otpForm").submit(function (e) {
+                e.preventDefault();
+                var otp = $("#OTP").val();
+                if (otp.trim() === "") {
+                    $("#validationMessage").text("Please enter the OTP.").show();
+                } else {
+                    $("#validationMessage").hide();
+                    $(this).unbind("submit").submit();
+                }
+            });
+
+            $("#OTP").on("input", function () {
+                if ($(this).val().trim() !== "") {
+                    $("#validationMessage").hide();
+                }
+            });
+        });
+    </script>
+}

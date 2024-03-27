@@ -1,0 +1,61 @@
+﻿@model MailRequest
+<link href="~/css/otp/sendotp.css" rel="stylesheet" />
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="card-title text-center">Send OTP</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-controller="OTP" asp-action="VerifyOTP" method="post">
+                        <div class="form-group row">
+                            <div class="col-md-1"></div>
+                            <label class="col-md-3 col-form-label text-md-left" for="toEmail">Email :</label>
+                            <div class="col-md-6">
+                                <input type="email" class="form-control" id="toEmail" name="toEmail">
+                                <span class="text-danger col-md-6" id="toEmailError" style="text-align:left"></span>
+                            </div>
+                        </div>
+                        <div class="form-group row mt-3">
+                            <div class="col-md-1"></div>
+                            <div class="col-md-3"></div>
+                            <div class="col-md-6" style=" text-align:left">
+                                <button type="submit" class="btn btn-primary">Send OTP</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="overlay" class="overlay-div">
+    <div id="spinner" class="center" style="color: white; display:none">
+        <div class="center">
+            <img src="~/images/bx_loader.gif" alt="" />
+            <p style="margin-top: 10px;">Sending OTP...</p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#toEmail').on('input', function () {
+                $('#toEmailError').text('');
+            });
+            $('form').submit(function (e) {
+                let toEmail = $('#toEmail').val();
+                if (!toEmail) {
+                    $('#toEmailError').text('Email is required.');
+                    return false;
+                }
+                $("#overlay").css("display", "flex");
+                $("#spinner").css("display", "flex");
+            });
+        });
+    </script>
+}
